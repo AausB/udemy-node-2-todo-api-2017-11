@@ -27,15 +27,26 @@ app.use(bodyParser.json()); // enabling app to receive JSON data -> stored in re
 
 
 // create a new todo
-app.post('/todos', (req, res) => {
+app.post('/todos', (request, response) => {
   var todo = new Todo({
-    text: req.body.text
+    text: request.body.text
   });
 
   todo.save().then((doc) => {
-    res.send(doc); // send back the doc to the caller
-  }).catch((err) => {
-    res.status(400).send(err);
+    response.send(doc); // send back the doc to the caller
+  }).catch((error) => {
+    res.status(400).send(error);
+  });
+});
+
+app.get('/todos', (request, response) => {
+  Todo.find().then((todos) => {
+    response.send({  // send back an object instead of the array only, because you can add custom data to the object if necessary
+      todos
+      // ,custom: 'My custom data'
+    });
+  }).catch((error) => {
+    response.status(400).send(error);
   });
 });
 
