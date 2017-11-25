@@ -3,6 +3,7 @@
 //
 const express = require('express');
 const bodyParser = require('body-parser');
+const {ObjectID} = require('mongodb'); // for validating with ObjectID.isValid()
 
 
 //
@@ -39,6 +40,7 @@ app.post('/todos', (request, response) => {
   });
 });
 
+// fetch all todos
 app.get('/todos', (request, response) => {
   Todo.find().then((todos) => {
     response.send({  // send back an object instead of the array only, because you can add custom data to the object if necessary
@@ -49,6 +51,26 @@ app.get('/todos', (request, response) => {
     response.status(400).send(error);
   });
 });
+
+// fetch a single todo
+app.get('/todos/:id', (request, response) => {
+  let id = request.params.id;
+
+  // validate id using ObjectID.isValid()
+  if (!ObjectID.isValid(id)) {
+    return response.status(404).send();
+  }
+
+  Todo.findById(id).then((todo) => {
+    if (!todo) {
+      return response.status(404).send();
+    }
+    response.status(200).send({todo});
+  }).catch((error) => {
+    response.status(400).send('error');
+  });
+});
+
 
 app.listen(3000, () => {
   console.log('Started on port 3000');
