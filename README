@@ -1,0 +1,13 @@
+Heroku und MONGODB
+
+Prerequisites:
+- create an account at mLab.com
+- create a database with dbuser and pwd
+- get the mongodb path
+
+
+1. create heroku app
+heroku apps:create lx-node-todo-app
+
+2. set the variable
+heroku config:set MONGODB_URI=path-to-mlab-mongodb 

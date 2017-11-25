@@ -20,6 +20,7 @@ const {User} = require('./models/user');
 // server
 //
 const app = express();
+const port = process.env.PORT || 3000;
 
 //
 // middleware
@@ -72,8 +73,8 @@ app.get('/todos/:id', (request, response) => {
 });
 
 
-app.listen(3000, () => {
-  console.log('Started on port 3000');
+app.listen(port, () => {
+  console.log(`Server started at port ${port}`);
 });
 
 //
