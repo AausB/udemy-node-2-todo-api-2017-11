@@ -35,7 +35,7 @@ app.post('/todos', (request, response) => {
   todo.save().then((doc) => {
     response.send(doc); // send back the doc to the caller
   }).catch((error) => {
-    res.status(400).send(error);
+    response.status(400).send(error);
   });
 });
 

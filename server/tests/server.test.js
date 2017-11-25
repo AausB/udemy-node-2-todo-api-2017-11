@@ -7,9 +7,18 @@ const {Todo} = require('./../models/todo');
 //
 // Prepare for tests
 //
+
+const todos = [{
+  text: 'First test todo'
+}, {
+  text: 'Second test todo'
+}];
+
 beforeEach((done) => {
   Todo.remove({}) // wipes all todos
-    .then(() => done())
+    .then(() => {
+      return Todo.insertMany(todos); // returns the promise
+    }).then(() => done())
     .catch((error) => done(error));
 });
 
@@ -30,7 +39,7 @@ describe('POST /todos', () => {
         }
 
         // check data in db
-        Todo.find().then((todos) => {
+        Todo.find({text}).then((todos) => {
           expect(todos.length).to.equal(1);
           expect(todos[0].text).to.equal(text);
           done();
@@ -50,10 +59,23 @@ describe('POST /todos', () => {
 
         // Check the data in db
         Todo.find().then((todos) => {
-          expect(todos.length).to.equal(0);
+          expect(todos.length).to.equal(2);
           done();
         }).catch((error) => done(error));
       })
     ;
+  });
+});
+
+
+describe('GET /todos', () => {
+  it('should get all todos', (done) => {
+    request(app)
+      .get('/todos')
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.todos.length).to.equal(2);
+      })
+      .end(done);
   });
 });
