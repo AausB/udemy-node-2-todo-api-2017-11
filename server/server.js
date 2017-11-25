@@ -66,10 +66,29 @@ app.get('/todos/:id', (request, response) => {
     if (!todo) {
       return response.status(404).send();
     }
-    response.status(200).send({todo});
+    response.send({todo});
   }).catch((error) => {
     response.status(400).send('error');
   });
+});
+
+// delete a single todo
+app.delete('/todos/:id', (request, response) => {
+  // get the id from the request
+  let id = request.params.id;
+
+  // validate id using ObjectID.isValid()
+  if (!ObjectID.isValid(id)) {
+    return response.status(404).send();
+  }
+
+  // remove todo by id
+  Todo.findByIdAndRemove(id).then((todo) => {
+    if (!todo) {
+      return response.status(404).send();
+    }
+    response.send({todo});
+  }).catch((error) => response.status(400).send());
 });
 
 
