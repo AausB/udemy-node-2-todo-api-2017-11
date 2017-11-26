@@ -1,6 +1,7 @@
 //
 // module imports
 //
+const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb'); // for validating with ObjectID.isValid()
@@ -30,6 +31,7 @@ app.use(bodyParser.json()); // enabling app to receive JSON data -> stored in re
 
 // create a new todo
 app.post('/todos', (request, response) => {
+  // only the wanted data is taken from user input
   var todo = new Todo({
     text: request.body.text
   });
@@ -89,6 +91,44 @@ app.delete('/todos/:id', (request, response) => {
     }
     response.send({todo});
   }).catch((error) => response.status(400).send());
+});
+
+// update document
+app.patch('/todos/:id', (request, response) => {
+  let id = request.params.id;
+  // VERY IMPORTANT: filter only attributes that are allowed to be updated!!!
+  // it is a subset of values the user passed
+  // ALSO: The same should be for inserts!!!
+  let body = _.pick(request.body, ['text', 'completed']);
+
+  // validate id using ObjectID.isValid()
+  if (!ObjectID.isValid(id)) {
+    return response.status(404).send();
+  }
+
+  // check the completed value
+  if (_.isBoolean(body.completed) && body.completed) {
+    body.completedAt = new Date().getTime(); // Javascript timestamp in millisecs from 01.01.1970
+  } else {
+    body.completed = false;
+    body.completedAt = null; // null: to delete the value from the db
+  }
+
+  // findByIdAndUpdate(id, {$set: {the obj with data to be updated}, {options object: here new from mongoose -> gets the updated values back from db}})
+  Todo.findByIdAndUpdate(id, {$set: body}, {new: true})
+    .then((todo) => {
+      // check if there is a document with the id
+      if (!todo) {
+        return response.status(404).send();
+      }
+      // todo does exist
+      response.send({todo});
+    }).catch((error) => {
+      console.log(error);
+      response.status(400).send();
+    });
+
+
 });
 
 
