@@ -14,7 +14,9 @@ const todos = [{
   text: 'First test todo'
 }, {
   _id: new ObjectID(),
-  text: 'Second test todo'
+  text: 'Second test todo',
+  completed: true,
+  completedAt: 123
 }];
 
 beforeEach((done) => {
@@ -159,4 +161,84 @@ describe('DELETE /todos/:id', () => {
       .expect(404)
       .end(done);
   });
+});
+
+describe('PATCH /todos/:id', () => {
+  it('should update the todo', (done) => {
+    // grab id of first item
+    let id = todos[0]._id.toHexString();
+    let update = {
+      text: 'Updated test text',
+      completed: true
+    };
+
+    // update the text, set completed to true
+    request(app)
+      .patch(`/todos/${id}`)
+      .send(update)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.todo.text).to.equal(update.text);
+        expect(response.body.todo.completed).to.equal(update.completed);
+        expect(response.body.todo.completedAt).to.be.a('number');
+      })
+      .end((error, response) => {
+        if (error) {
+          return done(error); // return stops the function execution - done(error) ends the test with error
+        }
+
+        // check data in db
+        Todo.findById(id).then((todo) => {
+          expect(todo.text).to.equal(update.text);
+          expect(todo.completed).to.equal(update.completed);
+          expect(todo.completedAt).to.be.a('number');
+          done();
+        }).catch((error) => done(error));
+      });
+  });
+
+  it('should clear completedAt when todo is not completed', (done) => {
+    // grab id of second todo item
+    // update text, completed to false
+    //  200
+    //  text is changed, completed is false and completedAt is null to.be.null
+    let id = todos[1]._id.toHexString();
+    let update = {
+      text: 'Updated test text',
+      completed: false
+    };
+
+    // update the text, set completed to true
+    request(app)
+      .patch(`/todos/${id}`)
+      .send(update)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.todo.text).to.equal(update.text);
+        expect(response.body.todo.completed).to.equal(update.completed);
+        expect(response.body.todo.completedAt).to.be.null;
+      })
+      .end((error, response) => {
+        if (error) {
+          return done(error); // return stops the function execution - done(error) ends the test with error
+        }
+
+        // check data in db
+        Todo.findById(id).then((todo) => {
+          expect(todo.text).to.equal(update.text);
+          expect(todo.completed).to.equal(update.completed);
+          expect(todo.completedAt).to.be.null;
+          done();
+        }).catch((error) => done(error));
+      });
+  });
+
+  it('should return 404 if object id is invalid', (done) => {
+    var id = '123xyz';
+    request(app)
+      .patch(`/todos/${id}`)
+      .expect(404)
+      .end(done);
+  });
+
 });
