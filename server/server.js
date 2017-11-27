@@ -30,6 +30,12 @@ const port = process.env.PORT;
 //
 app.use(bodyParser.json()); // enabling app to receive JSON data -> stored in req.body
 
+////////////////////////////////
+//
+// Todos
+//
+////////////////////////////////
+
 
 // create a new todo
 app.post('/todos', (request, response) => {
@@ -129,8 +135,31 @@ app.patch('/todos/:id', (request, response) => {
       console.log(error);
       response.status(400).send();
     });
+});
 
+////////////////////////////////
+//
+// Users
+//
+////////////////////////////////
 
+app.post('/users', (request, response) => {
+  let body = _.pick(request.body, ['email', 'password']);
+
+  // let user = new User({
+  //   email: body.email,
+  //   password: body.password
+  // });
+  // is the same:
+  let user = new User(body);
+
+  user.save().then(() => {
+    return user.generateAuthToken(); // returns the promise from user.save() that returns the token
+  }).then((token) => {
+      response.header('x-auth', token).send(user); // x-* indicates a custom header
+  }).catch((error) => {
+    response.status(400).send(error);
+  });
 });
 
 
