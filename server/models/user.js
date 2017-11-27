@@ -38,7 +38,7 @@ const UserSchema = new mongoose.Schema({
   }]
 });
 
-UserSchema.methods.toJSON = function() {
+UserSchema.methods.toJSON = function() {  // .methods turns into an instance method
   var user = this;
   var userObject = user.toObject(); // converting a Mongoose object into a JS object
 
@@ -47,7 +47,7 @@ UserSchema.methods.toJSON = function() {
 
 // define custom methods on UserSchema
 // using regular JS function because "this"
-UserSchema.methods.generateAuthToken = function() {
+UserSchema.methods.generateAuthToken = function() {  // .methods turns into an instance method
   var user = this;
   var access = 'auth';
   var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString(); // abc123 is the secret
@@ -55,6 +55,26 @@ UserSchema.methods.generateAuthToken = function() {
   user.tokens.push({access, token}); // this updates the local user model without saving to db
   return user.save().then(() => {
     return token;  // returning the success value for the next then-call in server.js
+  });
+};
+
+UserSchema.statics.findByToken = function(token) {  // .statics turns into a model method
+  let User = this;
+  let decoded; // undefined intentionally
+
+  try {
+    decoded = jwt.verify(token, 'abc123'); // throws an error if anything goes wrong
+  } catch(error) { // return a Promise that is rejected !!
+    // return new Promise((resolve, reject) => {
+    //   reject();
+    // });
+    return Promise.reject(); // the shortcut version
+  }
+
+  return User.findOne({
+    '_id': decoded._id, // '' used here only for beauty purposes
+    'tokens.token': token, // use '' if dots are in property name
+    'tokens.access': 'auth'
   });
 };
 

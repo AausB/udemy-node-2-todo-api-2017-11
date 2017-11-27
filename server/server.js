@@ -20,6 +20,12 @@ const {Todo} = require('./models/todo');
 const {User} = require('./models/user');
 
 //
+// middleware
+//
+const {authenticate} = require('./middleware/authenticate');
+
+
+//
 // server
 //
 const app = express();
@@ -162,6 +168,10 @@ app.post('/users', (request, response) => {
   });
 });
 
+// private route
+app.get('/users/me', authenticate, (request, response) => {
+  response.send(request.user);
+});
 
 app.listen(port, () => {
   console.log(`Server started at port ${port}`);
