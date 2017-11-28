@@ -164,13 +164,13 @@ app.post('/users', (request, response) => {
   }).then((token) => {
       response.header('x-auth', token).send(user); // x-* indicates a custom header
   }).catch((error) => {
-    response.status(400).send(error);
+    response.status(400).send(error); // ob man da wirklich error schickt?
   });
 });
 
 // private route
 app.get('/users/me', authenticate, (request, response) => {
-  response.send(request.user);
+  response.send(request.user); // request.user is set in "authenticate" !!!
 });
 
 app.listen(port, () => {

@@ -51,6 +51,8 @@ UserSchema.methods.toJSON = function() {  // .methods turns into an instance met
 UserSchema.methods.generateAuthToken = function() {  // .methods turns into an instance method
   var user = this;
   var access = 'auth';
+  // token besteht aud der mongodb _id, dem access string 'auth' und dem secret key 'abc123'
+  // d.h. man kann die _id wieder aus dem token herausziehen mit jwt.veriy() : siehe unten User.findByToken()
   var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString(); // abc123 is the secret
 
   user.tokens.push({access, token}); // this updates the local user model without saving to db
@@ -90,11 +92,19 @@ UserSchema.pre('save', function(next) { // we need this
       // if (error) {
       //   next();
       // }
+      // Ich mach mal so:
+      if (error) {
+       throw error;
+      }
      bcrypt.hash(user.password, salt, (error, hash) => {
        // what to do with the errors?
        // if (error) {
        //   next();
        // }
+       // Ich mach mal so:
+       if (error) {
+        throw error;
+       }
        user.password = hash;
        next();
      })

@@ -9,6 +9,7 @@ const authenticate = (request, response, next) => {
       return Promise.reject(); // jumps right to the .catch() error path below
     }
 
+    // set user and token into the request object
     request.user = user;
     request.token = token;
     next();
