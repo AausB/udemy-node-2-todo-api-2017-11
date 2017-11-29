@@ -100,7 +100,6 @@ UserSchema.statics.findByCredentials = function (email, password) {
         }
       });
     });
-
   });
 };
 
