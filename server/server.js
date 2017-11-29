@@ -7,7 +7,7 @@ const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb'); // for validating with ObjectID.isValid()
-
+const bcrypt = require('bcryptjs');
 
 //
 // mongoose setup
@@ -171,6 +171,22 @@ app.post('/users', (request, response) => {
 // private route
 app.get('/users/me', authenticate, (request, response) => {
   response.send(request.user); // request.user is set in "authenticate" !!!
+});
+
+// user login
+app.post('/users/login', (request, response) => {
+  let body = _.pick(request.body, ['email', 'password']);
+
+  User.findByCredentials(body.email, body.password).then((user) => {
+    return user.generateAuthToken().then((token) => { // with return .catch() is called for errors
+      response.header('x-auth', token).send(user); // toJSON() in user.js filters the user properties
+    })
+
+  }).catch((error) => {
+    response.status(400).send();
+  }) ;
+
+
 });
 
 app.listen(port, () => {
