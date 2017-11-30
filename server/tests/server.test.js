@@ -393,3 +393,32 @@ describe('POST /users/login', () => {
 
   });
 });
+
+describe('DELETE /users/me/token', () => {
+
+  it('should remove the x-auth token on logout', (done) => {
+    // delet request to /users/me/tokens
+    let id = users[0]._id.toHexString();
+    let token = users[0].tokens[0].token;
+
+    request(app)
+      .delete('/users/me/token')
+      .set('x-auth', token)
+      // .send() // not needed
+      .expect(200)
+      .expect((response) => {
+        expect(response.body).to.be.empty;
+      })
+    .end((error, response) => {
+      if (error) {
+        return done(error);
+      }
+
+      User.findById(id).then((user) => {
+        expect(user.tokens.length).to.equal(0);
+        done();
+      }).catch((error) => done(error));
+    });
+  });
+
+});
