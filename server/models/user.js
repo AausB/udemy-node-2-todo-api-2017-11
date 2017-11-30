@@ -61,6 +61,17 @@ UserSchema.methods.generateAuthToken = function() {  // .methods turns into an i
   });
 };
 
+UserSchema.methods.removeToken = function(token) {
+  let user = this;
+
+  // $pull removes itmes from an array that matches certain criteria
+  return user.update({ // return the promise
+    $pull: { // removes the complete property access & token
+        tokens: {token}
+    }
+  });
+};
+
 UserSchema.statics.findByToken = function(token) {  // .statics turns into a model method
   let User = this;
   let decoded; // undefined intentionally

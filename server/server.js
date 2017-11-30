@@ -185,10 +185,19 @@ app.post('/users/login', (request, response) => {
   }).catch((error) => {
     response.status(400).send();
   }) ;
-
-
 });
 
+// user logout
+app.delete('/users/me/token', authenticate, (request, response) => {
+  request.user.removeToken(request.token).then(() => {
+    response.status(200).send();
+  }).catch((error) => response.status(400).send());
+});
+
+
+//
+// app server
+//
 app.listen(port, () => {
   console.log(`Server started at port ${port}`);
 });
