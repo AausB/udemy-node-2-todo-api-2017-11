@@ -1,12 +1,14 @@
 // is set by heroku to "production"
 const env = process.env.NODE_ENV || 'development';
 
-if (env === 'development') {
-  process.env.PORT = 3000;
-  process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoApp';
-} else if (env === 'test') {
-  process.env.PORT = 3000;
-  process.env.MONGODB_URI = 'mongodb://localhost:27017/TodoAppTest';
-}
+if (env === 'development' || env === 'test') {
+  const config = require('./config.json'); // automatically consverted inot an JS object
 
-// console.log('env ************', env);
+  // extract the relevant config object (development or test)
+  const envConfig = config[env];
+
+  // loop over the extracted config object and create environment variables
+  Object.keys(envConfig).forEach((key) => {
+    process.env[key] = envConfig[key];
+  })
+}

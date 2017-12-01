@@ -53,7 +53,7 @@ UserSchema.methods.generateAuthToken = function() {  // .methods turns into an i
   var access = 'auth';
   // token besteht aud der mongodb _id, dem access string 'auth' und dem secret key 'abc123'
   // d.h. man kann die _id wieder aus dem token herausziehen mit jwt.veriy() : siehe unten User.findByToken()
-  var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString(); // abc123 is the secret
+  var token = jwt.sign({_id: user._id.toHexString(), access}, process.env.JWT_SECRET).toString(); // abc123 is the secret
 
   user.tokens.push({access, token}); // this updates (adds new token) the local user model without saving to db
   return user.save().then(() => {
@@ -77,7 +77,7 @@ UserSchema.statics.findByToken = function(token) {  // .statics turns into a mod
   let decoded; // undefined intentionally
 
   try {
-    decoded = jwt.verify(token, 'abc123'); // throws an error if anything goes wrong
+    decoded = jwt.verify(token, process.env.JWT_SECRET); // throws an error if anything goes wrong
   } catch(error) { // return a Promise that is rejected !!
     // return new Promise((resolve, reject) => {
     //   reject();
