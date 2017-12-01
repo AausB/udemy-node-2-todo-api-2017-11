@@ -44,10 +44,11 @@ app.use(bodyParser.json()); // enabling app to receive JSON data -> stored in re
 
 
 // create a new todo
-app.post('/todos', (request, response) => {
+app.post('/todos', authenticate, (request, response) => {
   // only the wanted data is taken from user input
   var todo = new Todo({
-    text: request.body.text
+    text: request.body.text,
+    _creator: request.user._id
   });
 
   todo.save().then((doc) => {
@@ -58,8 +59,10 @@ app.post('/todos', (request, response) => {
 });
 
 // fetch all todos
-app.get('/todos', (request, response) => {
-  Todo.find().then((todos) => {
+app.get('/todos', authenticate, (request, response) => {
+  Todo.find({
+    _creator: request.user._id
+  }).then((todos) => {
     response.send({  // send back an object instead of the array only, because you can add custom data to the object if necessary
       todos
       // ,custom: 'My custom data'
@@ -70,7 +73,7 @@ app.get('/todos', (request, response) => {
 });
 
 // fetch a single todo
-app.get('/todos/:id', (request, response) => {
+app.get('/todos/:id', authenticate, (request, response) => {
   let id = request.params.id;
 
   // validate id using ObjectID.isValid()
@@ -78,7 +81,10 @@ app.get('/todos/:id', (request, response) => {
     return response.status(404).send();
   }
 
-  Todo.findById(id).then((todo) => {
+  Todo.findOne({
+      _id: id,
+      _creator: request.user._id
+    }).then((todo) => {
     if (!todo) {
       return response.status(404).send();
     }
@@ -89,7 +95,7 @@ app.get('/todos/:id', (request, response) => {
 });
 
 // delete a single todo
-app.delete('/todos/:id', (request, response) => {
+app.delete('/todos/:id', authenticate, (request, response) => {
   // get the id from the request
   let id = request.params.id;
 
@@ -99,7 +105,10 @@ app.delete('/todos/:id', (request, response) => {
   }
 
   // remove todo by id
-  Todo.findByIdAndRemove(id).then((todo) => {
+  Todo.findOneAndRemove({
+      _id: id,
+      _creator: request.user._id
+    }).then((todo) => {
     if (!todo) {
       return response.status(404).send();
     }
@@ -107,8 +116,8 @@ app.delete('/todos/:id', (request, response) => {
   }).catch((error) => response.status(400).send());
 });
 
-// update document
-app.patch('/todos/:id', (request, response) => {
+// update (parts of) the document
+app.patch('/todos/:id', authenticate, (request, response) => {
   let id = request.params.id;
   // VERY IMPORTANT: filter only attributes that are allowed to be updated!!!
   // it is a subset of values the user passed
@@ -128,8 +137,10 @@ app.patch('/todos/:id', (request, response) => {
     body.completedAt = null; // null: to delete the value from the db
   }
 
-  // findByIdAndUpdate(id, {$set: {the obj with data to be updated}, {options object: here new from mongoose -> gets the updated values back from db}})
-  Todo.findByIdAndUpdate(id, {$set: body}, {new: true})
+  Todo.findOneAndUpdate({
+      _id: id,
+      _creator: request.user._id
+    }, {$set: body}, {new: true})
     .then((todo) => {
       // check if there is a document with the id
       if (!todo) {

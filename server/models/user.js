@@ -55,7 +55,7 @@ UserSchema.methods.generateAuthToken = function() {  // .methods turns into an i
   // d.h. man kann die _id wieder aus dem token herausziehen mit jwt.veriy() : siehe unten User.findByToken()
   var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString(); // abc123 is the secret
 
-  user.tokens.push({access, token}); // this updates the local user model without saving to db
+  user.tokens.push({access, token}); // this updates (adds new token) the local user model without saving to db
   return user.save().then(() => {
     return token;  // returning the success value for the next then-call in server.js
   });

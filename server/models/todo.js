@@ -16,6 +16,10 @@ const Todo = mongoose.model('Todo', {
   completedAt: {
     type: Number,
     default: null // set default at creation if no value is given
+  },
+  _creator: {
+    type: mongoose.Schema.Types.ObjectId, // with lowercase d: stores an ObjectID
+    required: true
   }
 });
 

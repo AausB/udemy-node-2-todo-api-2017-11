@@ -8,15 +8,6 @@ const {User} = require('./../../models/user');
 // Prepare for tests
 //
 
-const todos = [{
-  _id: new ObjectID(),
-  text: 'First test todo'
-}, {
-  _id: new ObjectID(),
-  text: 'Second test todo',
-  completed: true,
-  completedAt: 123
-}];
 
 const userOneId = new ObjectID();
 const userTwoId = new ObjectID();
@@ -31,8 +22,25 @@ const users = [{
 }, {
   _id: userTwoId,
   email: 'carox@example.com',
-  password: 'userTwoPassword'
+  password: 'userTwoPassword',
+  tokens: [{
+    access: 'auth',
+    token: jwt.sign({_id: userTwoId, access: 'auth'}, 'abc123').toString() // abc123 is the secret
+  }]
 }];
+
+const todos = [{
+  _id: new ObjectID(),
+  text: 'First test todo',
+  _creator: userOneId
+}, {
+  _id: new ObjectID(),
+  text: 'Second test todo',
+  completed: true,
+  completedAt: 123,
+  _creator: userTwoId
+}];
+
 
 const populateTodos = ((done) => {
   Todo.remove({}) // wipes all todos
